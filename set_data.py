@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 bus_pos = pd.read_csv("dataset/buspos_info.csv", encoding='CP949')
 bus_people = pd.read_csv("dataset/buspeople_info.csv", encoding='CP949')
@@ -18,7 +19,11 @@ def Calculate_rate(dataframe):
 
     dataframe['start_date'] = pd.to_datetime(dataframe['측정 시작 시간'])
     dataframe['day'] = dataframe['start_date'].dt.day
+    dataframe['time'] = dataframe['start_date'].dt.minute
 
+    #1시간간격으로 하기위해 0분(정각) 이외의 시간 다 없애기
+    dataframe = dataframe.loc[dataframe['time'] == 0][:]
+    dataframe = dataframe.reset_index(drop=True)
     day_check = dataframe['day'][0]
 
     for i in range(0, dataframe['측정 시작 시간'].count() -1):
@@ -35,8 +40,17 @@ def Calculate_rate(dataframe):
         day_out_data.append(dataframe['카메라 통과 인원 (OUT)'][i] - dataframe['카메라 통과 인원 (OUT)'][i+1])
 
 
-
     return result_in_data, result_out_data
+
+#지정된 정류장들을 탐색 후 시간별 재차인원 구하기
+def extract_businfo(bus_station):
+    for i in range(0,len(bus_station)):
+        temp = bus_pos.loc[bus_pos['정류장_명칭'] == bus_station[i]][:]
+    for j in temp['정류장_ID']:
+        busresult = bus_people.loc[bus_people['도착_정류장_ID'] == j][:]
+    
+    busresult = busresult.iloc[:,[11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]]
+    return busresult
 
 
 #북촌과 road_info 를 서로 비교하여 북촌의 길거리만 나오는 데이터프레임
@@ -53,42 +67,37 @@ for i in range(0,3):
     extracted_road_info = pd.concat((extracted_road_info,road_info[road_info['노선명(도로명)'] == info['주소'][i]]))
 
 
-result_in = []
-result_out = []
 b = bukchon.loc[bukchon[bukchon['주소']=='북촌로5가길'].index[:]]
-b = b.reset_index(drop=True)
-in_data, out_data = Calculate_rate(b)
+b_in_data, b_out_data = Calculate_rate(b)
+b_in_data.reverse()
+b_out_data.reverse()
 
-in_data.reverse()
-out_data.reverse()
+g = bukchon.loc[bukchon[bukchon['주소']=='계동길'].index[:]]
+g = g.reset_index(drop=True)
+g_in_data, g_out_data = Calculate_rate(g)
+g_in_data.reverse()
+g_out_data.reverse()
 
-result_in.append(in_data)
-result_out.append(out_data)
+y = bukchon.loc[bukchon[bukchon['주소']=='율곡로3길'].index[:]]
+y = y.reset_index(drop=True)
+y_in_data, y_out_data = Calculate_rate(g)
+y_in_data.reverse()
+y_out_data.reverse()
+#길이 51(일)
+# print(len(b_out_data))
 
-print(len(out_data))
+#시각확인용
+# fig, axes = plt.subplots(2,2)
+
+# axes[0][0].plot(b_out_data[1])
+# axes[0][1].plot(b_out_data[10])
+# axes[1][0].plot(b_out_data[3])
+# axes[1][1].plot(b_out_data[11])
+
+# plt.show()
 
 
-fig, axes = plt.subplots(2,2)
 
-axes[0][0].plot(out_data[1])
-axes[0][1].plot(out_data[20])
-axes[1][0].plot(out_data[3])
-axes[1][1].plot(out_data[11])
-
-plt.show()
-
-
-#주소명에 따라 도로폭 칼럼 추가
-
-# b['도로폭'] = 0
-# g = bukchon.loc[bukchon[bukchon['주소']=='계동길'].index[:]]
-# g['도로폭'] = 0
-# y = bukchon.loc[bukchon[bukchon['주소']=='율곡로3길'].index[:]]
-# y['도로폭'] = 1
-
-# result_road = pd.concat([b,g,y])
-# result_road = result_road[['주소','측정 시작 시간','측정 종료 시간','카메라 통과 인원 (IN)','카메라 통과 인원 (OUT)','도로폭']]
-# print(result_road)
 
 
 #북촌 주변 상권건물 데이터 가져오기
@@ -102,8 +111,21 @@ plt.show()
 # print(extracted_store)
 
 #주변 버스정보 데이터 가져오고 병합
+b_bus_station = ['삼청파출소','정독도서관','경복궁.국립민속박물관','국립민속박물관']
+g_bus_station = ['중앙중고','원서고개','사우디대사관','사우디대사관앞.경남빌라','안국선원.삼거리','북촌한옥마을입구.정세권활동터','가희동주민센터','현대사거리','아름다운가게.정독도서관','재동초등학교']
+y_bus_station = ['덕성여중고','인사동.북촌','안국역.서울공예박물관','안국역.인사동','정독도서관','경복궁.국립민속박물관','국립민속박물관','법련사','경복궁','안국역','안국동']
 
 
+b_near_bus_station = extract_businfo(b_bus_station)
+
+b_in_data = pd.DataFrame(b_in_data)
+#주소명에 따라 도로폭 칼럼 추가
+
+#y도로폭 = 1
+
+# g_x_data = b_near_bus_station.iloc[:,0].values
+# g_x_data = np.append(g_x_data, [0])
+# print(g_x_data)
 
 
-#정제한 데이터들 병합 result_road, extracted_store, 
+#정제한 데이터들 병합
