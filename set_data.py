@@ -23,14 +23,16 @@ def Calculate_rate(dataframe):
 
     for i in range(0, dataframe['측정 시작 시간'].count() -1):
         if day_check != dataframe['day'][i]:
+            day_in_data.pop()
+            day_out_data.pop()
             result_in_data.append(list(day_in_data))
             result_out_data.append(list(day_out_data))
             day_in_data.clear()
             day_out_data.clear()
             day_check = dataframe['day'][i]
-        else:
-            day_in_data.append(dataframe['카메라 통과 인원 (IN)'][i] - dataframe['카메라 통과 인원 (IN)'][i+1])
-            day_out_data.append(dataframe['카메라 통과 인원 (OUT)'][i] - dataframe['카메라 통과 인원 (OUT)'][i+1])
+
+        day_in_data.append(dataframe['카메라 통과 인원 (IN)'][i] - dataframe['카메라 통과 인원 (IN)'][i+1])
+        day_out_data.append(dataframe['카메라 통과 인원 (OUT)'][i] - dataframe['카메라 통과 인원 (OUT)'][i+1])
 
 
 
@@ -63,13 +65,15 @@ out_data.reverse()
 result_in.append(in_data)
 result_out.append(out_data)
 
+print(len(out_data))
+
 
 fig, axes = plt.subplots(2,2)
 
-axes[0][0].plot(out_data[0])
-axes[0][1].plot(out_data[1])
-axes[1][0].plot(out_data[5])
-axes[1][1].plot(out_data[10])
+axes[0][0].plot(out_data[1])
+axes[0][1].plot(out_data[20])
+axes[1][0].plot(out_data[3])
+axes[1][1].plot(out_data[11])
 
 plt.show()
 
