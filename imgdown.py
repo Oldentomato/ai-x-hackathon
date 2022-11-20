@@ -1,10 +1,11 @@
 import firebase_admin
 from firebase_admin import credentials ,firestore
+import keyinfo as key
 
 
 cred = credentials.Certificate("key/hackathon-11d72-firebase-adminsdk-7hnwq-45f6fa260b.json")
 firebase_admin.initialize_app(cred,{
-    'databaseURL' : 'https://hackathon-11d72.firebaseio.com'
+    'databaseURL' : key.keyURL
 })
 
 db = firestore.client()
