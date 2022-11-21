@@ -19,6 +19,7 @@ def Calculate_rate(dataframe):
 
     dataframe['start_date'] = pd.to_datetime(dataframe['측정 시작 시간'])
     dataframe['day'] = dataframe['start_date'].dt.day
+    dataframe['month'] = dataframe['start_date'].dt.month
     dataframe['time'] = dataframe['start_date'].dt.minute
 
     #1시간간격으로 하기위해 0분(정각) 이외의 시간 다 없애기
@@ -27,7 +28,7 @@ def Calculate_rate(dataframe):
     day_check = dataframe['day'][0]
 
     for i in range(0, dataframe['측정 시작 시간'].count() -1):
-        if day_check != dataframe['day'][i]:
+        if day_check != dataframe['day'][i] and day_in_data:
             day_in_data.pop()
             day_out_data.pop()
             result_in_data.append(list(day_in_data))
@@ -36,8 +37,9 @@ def Calculate_rate(dataframe):
             day_out_data.clear()
             day_check = dataframe['day'][i]
 
-        day_in_data.append(dataframe['카메라 통과 인원 (IN)'][i] - dataframe['카메라 통과 인원 (IN)'][i+1])
-        day_out_data.append(dataframe['카메라 통과 인원 (OUT)'][i] - dataframe['카메라 통과 인원 (OUT)'][i+1])
+        if (dataframe['month'][i] == 10 and dataframe['day'][i] >= 27) or (dataframe['month'][i] == 11 and dataframe['day'][i] <= 13):
+            day_in_data.append(dataframe['카메라 통과 인원 (IN)'][i] - dataframe['카메라 통과 인원 (IN)'][i+1])
+            day_out_data.append(dataframe['카메라 통과 인원 (OUT)'][i] - dataframe['카메라 통과 인원 (OUT)'][i+1])
 
 
     return result_in_data, result_out_data
@@ -83,6 +85,8 @@ y = y.reset_index(drop=True)
 y_in_data, y_out_data = Calculate_rate(g)
 y_in_data.reverse()
 y_out_data.reverse()
+
+
 #길이 51(일)
 # print(len(b_out_data))
 
@@ -121,10 +125,14 @@ b_near_bus_station = extract_businfo(b_bus_station)
 b_in_data = pd.DataFrame(b_in_data)
 #주소명에 따라 도로폭 칼럼 추가
 
+g_x_data = []
 #y도로폭 = 1
+print(b_near_bus_station)
 
-# g_x_data = b_near_bus_station.iloc[:,0].values
-# g_x_data = np.append(g_x_data, [0])
+#버스데이터는 y데이터와 모양이 같아야함(시간) 버스시간만큼 y데이터에서 0~4시도 드랍해야함
+
+g_yin_data = np.array(g_in_data)
+# print(g_yin_data)
 # print(g_x_data)
 
 
