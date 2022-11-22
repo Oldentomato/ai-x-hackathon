@@ -33,7 +33,7 @@ print(y_valid)
 latest = tf.train.latest_checkpoint('/data/checkpoint/_'+str(checkpoint_count)+'/')
 model = lt.create_model()
 model.load_weights(latest)
-history = lt.run_model(model,lt.SetCallbacks(checkpoint_count))
+history = lt.run_model(model,lt.SetCallbacks(checkpoint_count),x_train,y_train,x_valid,y_valid)
 
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])

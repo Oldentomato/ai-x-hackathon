@@ -21,9 +21,11 @@ def run_gpu():
             
 
 def standarization(data): #표준화 (정규화는 효과가 안좋았음)
-    data_mean = data[:].mean()
-    data_std = data[:].std()
-    data = (data-data_mean)/data_std
+    data = data[:]*0.001
+    data = (data - np.mean(data, axis=0)) / np.std(data, axis=0)
+    # data_mean = data[:].mean()
+    # data_std = data[:].std()
+    # data = (data-data_mean)/data_std
     return data
 
 def plot_train_history(history, title):
@@ -57,27 +59,6 @@ def multi_step_plot(history, true_future, prediction):
 def create_time_steps(length):
     return list(range(-length,0))
 
-x_data = pd.read_csv("/data/dataset/b_xData")
-y_data = pd.read_csv("/data/dataset/b_yData")
-
-x_data = np.array(x_data)
-y_data = np.array(y_data)
-
-x_data = x_data.reshape(x_data.shape[0], 1, x_data.shape[1])
-
-print(x_data)
-print(y_data)
-
-
-x_train,x_valid,y_train,y_valid = train_test_split(x_data,y_data,test_size=0.2)
-
-x_train = standarization(x_train)
-y_train = standarization(y_train)
-x_valid = standarization(x_valid)
-y_valid = standarization(y_valid)
-
-print(x_valid)
-print(y_valid)
 
 
 def SetCallbacks(checkpoint_count):
@@ -95,7 +76,7 @@ def create_model():
     model.add(tf.keras.layers.LSTM(64, return_sequences=True, input_shape=x_train.shape[-2:]))
     model.add(tf.keras.layers.LSTM(32, activation='relu'))
     model.add(tf.keras.layers.Dropout(0.05))
-    model.add(tf.keras.layers.Dense(19))#18시간(1일) 데이터
+    model.add(tf.keras.layers.Dense(19))#19시간(1일) 데이터
 
     model.summary()
 
@@ -104,7 +85,7 @@ def create_model():
     return model
     
 
-def run_model(model,callback):
+def run_model(model,callback,x_train,y_train,x_valid,y_valid):
     with tf.device("/gpu:0"):
         history = model.fit(x_train,y_train,
                                        epochs=100,
