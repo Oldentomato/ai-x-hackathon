@@ -51,14 +51,14 @@ def extract_businfo(bus_station):
     for i in range(0,len(bus_station)):
         temp = bus_pos.loc[bus_pos['정류장_명칭'] == bus_station[i]][:]
     for j in temp['정류장_ID']:
-        busresult = bus_people.loc[bus_people['도착_정류장_ID'] == j][:]
+        bus_result = bus_people.loc[bus_people['도착_정류장_ID'] == j][:]
     
     #해당 버스의 날짜를 추출
-    busresult = busresult.iloc[:,[0,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]]
+    bus_result = bus_result.iloc[:,[0,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]]
     # busresult['start_date'] = busresult['기준_날짜'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
     # busresult['day'] = busresult['start_date'].dt.day
     # busresult['month'] = busresult['start_date'].dt.month
-    return busresult
+    return bus_result
 
 
 #북촌과 road_info 를 서로 비교하여 북촌의 길거리만 나오는 데이터프레임
@@ -127,7 +127,6 @@ y_bus_station = ['덕성여중고','인사동.북촌','안국역.서울공예박
 
 
 b_near_bus_station = extract_businfo(b_bus_station)
-print(b_near_bus_station)
 b_near_bus_station.drop(['기준_날짜'],axis=1, inplace=True)
 b_near_bus_station = b_near_bus_station.values.tolist()
 b_near_bus_station.reverse()
@@ -137,39 +136,25 @@ b_near_bus_station.reverse()
 b_in_data = pd.DataFrame(b_in_data)
 b_near_bus_station = pd.DataFrame(b_near_bus_station)
 
-b_in_data = b_in_data.drop([9,17,18])
+b_in_data = b_in_data.drop([17,18])
 b_in_data.reset_index()
 
 b_in_data = b_in_data.fillna(method='bfill')
 b_near_bus_station = b_near_bus_station.fillna(method='bfill')
 
-b_near_bus_station = b_near_bus_station.T
-# fig, axes = plt.subplots(2,2)
-# fig2, axes2 = plt.subplots(2,2)
-
-# axes[0][0].plot(b_in_data[0])
-# axes[0][1].plot(b_in_data[1])
-# axes[1][0].plot(b_in_data[2])
-# axes[1][1].plot(b_in_data[3])
-# axes2[0][0].plot(b_near_bus_station[0])
-# axes2[0][1].plot(b_near_bus_station[1])
-# axes2[1][0].plot(b_near_bus_station[2])
-# axes2[1][1].plot(b_near_bus_station[3])
-
-# plt.show()
 
 #y도로폭 = 1
-b_in_data = np.array(b_in_data)
-b_in_data = b_in_data.flatten()
+# b_in_data = np.array(b_in_data)
+# b_in_data = b_in_data.flatten()
 
-# plt.plot(b_in_data)
-# plt.show()
 
-# print(b_near_bus_station)
-print(b_in_data)
 
-# b_near_bus_station.to_csv("resultdata/b_xData")
-# b_in_data.to_csv("resultdata/b_yData")
+
+# b_in_data = np.array(b_in_data)
+# b_near_bus_station = np.array(b_near_bus_station)
+
+b_near_bus_station.to_csv("resultdata/b_xData",header=True,index=False)
+b_in_data.to_csv("resultdata/b_yData",header=True,index=True)
 
 
 
