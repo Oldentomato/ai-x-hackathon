@@ -28,13 +28,16 @@ def Data_Processing(bus_station,in_data,out_data):
 
     in_data = in_data.drop([9,18])
     out_data = out_data.drop([9,18])
+
+    in_data = in_data.fillna(method='ffill')
+    out_data = out_data.fillna(method='ffill')
+    near_arrive_bus = near_arrive_bus.fillna(method='bfill')
+    near_depart_bus = near_depart_bus.fillna(method='bfill')
+
     in_data.reset_index(inplace=True,drop=True)
     out_data.reset_index(inplace=True,drop=True)
 
-    in_data = in_data.fillna(method='bfill')
-    out_data = out_data.fillna(method='bfill')
-    near_arrive_bus = near_arrive_bus.fillna(method='bfill')
-    near_arrive_bus = near_arrive_bus.fillna(method='bfill')
+
 
     return near_arrive_bus,near_depart_bus,in_data,out_data
 
@@ -52,10 +55,10 @@ def SaveData(dir,data_1,data_2,data_3,data_4):
             None
     """
     data_1.to_csv("resultdata/"+dir+"/b_arr_xData",header=True,index=False)
-    data_2.to_csv("resultdata/"+dir+"/b__depart_xData",header=True,index=False)
+    data_2.to_csv("resultdata/"+dir+"/b_depart_xData",header=True,index=False)
 
-    data_3.to_csv("resultdata/"+dir+"/b_in_yData",header=True,index=True)
-    data_4.to_csv("resultdata/"+dir+"/b_out_yData",header=True,index=True)
+    data_3.to_csv("resultdata/"+dir+"/b_in_yData",header=True,index=False)
+    data_4.to_csv("resultdata/"+dir+"/b_out_yData",header=True,index=False)
 
 
 def Calculate_rate(dataframe):
@@ -179,19 +182,19 @@ b_arrive_bus_station,b_depart_bus_station,b_in_data,b_out_data = Data_Processing
 g_arrive_bus_station,g_depart_bus_station,g_in_data,g_out_data = Data_Processing(g_bus_station,g_in_data,g_out_data)
 y_arrive_bus_station,y_depart_bus_station,y_in_data,y_out_data = Data_Processing(y_bus_station,y_in_data,y_out_data)
 
-print(g_arrive_bus_station)
-print(g_depart_bus_station)
-print(g_in_data)
-print(g_out_data)
+print(b_arrive_bus_station)
+print(b_depart_bus_station)
+print(b_in_data)
+print(b_out_data)
 
-fig, axes = plt.subplots(2,2)
+# fig, axes = plt.subplots(2,2)
 
-axes[0][0].plot(g_arrive_bus_station)
-axes[0][1].plot(g_depart_bus_station)
-axes[1][0].plot(g_in_data)
-axes[1][1].plot(g_out_data)
+# axes[0][0].plot(g_arrive_bus_station)
+# axes[0][1].plot(g_depart_bus_station)
+# axes[1][0].plot(g_in_data)
+# axes[1][1].plot(g_out_data)
 
-plt.show()
+# plt.show()
 
 #y도로폭 = 1
 # b_in_data = np.array(b_in_data)
@@ -199,9 +202,9 @@ plt.show()
 
 
 
-# SaveData("bukchon",b_arrive_bus_station,b_depart_bus_station,b_in_data,b_out_data)
-# SaveData("gaedong",g_arrive_bus_station,g_depart_bus_station,g_in_data,g_out_data)
-# SaveData("yulgok",y_arrive_bus_station,y_depart_bus_station,y_in_data,y_out_data)
+SaveData("bukchon",b_arrive_bus_station,b_depart_bus_station,b_in_data,b_out_data)
+SaveData("gaedong",g_arrive_bus_station,g_depart_bus_station,g_in_data,g_out_data)
+SaveData("yulgok",y_arrive_bus_station,y_depart_bus_station,y_in_data,y_out_data)
 
 print("done")
 

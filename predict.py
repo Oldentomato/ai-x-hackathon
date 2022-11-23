@@ -11,30 +11,42 @@ firebase_admin.initialize_app(cred,{
     'databaseURL' : key.keyURL
 })
 
-def Calc_rate(in_data,out_data):
-    in_result, out_result = []
+def Calc_rate(inmodel,outmodel,in_data,out_data,day):
+    in_result = []
+    out_result= []
     result_rate = []
-    for i in range(0,7):#7일간의 데이터를 이용하여 7일의 예측데이터 가져오기
-        result = model.predict(in_data[i])[3]#3이 최종결과값 (0~3까지있음)
+    for i in range(0,day):#7일간의 데이터를 이용하여 7일의 예측데이터 가져오기
+        result = inmodel.predict(in_data)[i]#validation 데이터 4개를 넣었기 때문에 4개의 결과값이 나옴
         #나온 결과를 정규화
+        result = result.reshape(-1,1)
         scaler = MinMaxScaler()
         scaler.fit(result)
-        in_result.append(scaler.transform(result))
-    for i in range(0,7):#7일간의 데이터를 이용하여 7일의 예측데이터 가져오기
-        result = model.predict(out_data[i])[3]#3이 최종결과값 (0~3까지있음)
+        result = scaler.transform(result)
+        result = result.flatten()
+        in_result.append(result)
+    for i in range(0,day):
+        result = outmodel.predict(out_data)[i]
         #나온 결과를 정규화
+        result = result.reshape(-1,1)
         scaler = MinMaxScaler()
         scaler.fit(result)
-        out_result.append(scaler.transform(result))
-        
-    print(in_result)#debug
+        result = scaler.transform(result)
+        result = result.flatten()
+        out_result.append(result)
+                                            
 
-    for j in range(0,7):
-        for i in range(0,19):#19시간(1일)간 들어온비율과나간비율을 계산(딕셔너리로 저장)
+    for j in range(0,day):
+        temp = []
+        for i in range(0,18):#18시간(1일)간 들어온비율과나간비율을 계산(딕셔너리로 저장)
             if in_result[j][i] > out_result[j][i]:
-                result_rate.append()
+                temp.append({'increase':in_result[j][i]-out_result[j][i]})
+            elif in_result[j][i] < out_result[j][i]:
+                temp.append({'decrease':out_result[j][i]-in_result[j][i]})
             else:
-                result_rate.append()
+                temp.append({'not': 0})
+        result_rate.append(temp)
+                
+    return result_rate
 
 db = firestore.client()
 for k in db.collection("test").get():
@@ -46,15 +58,13 @@ for k in db.collection("test").get():
 #그동안 모은 데이터들을 이용하여 새로 학습 후 배포
 #loss가 큰 변동이 없다면 학습하지 않고 7일간 모인 x데이터를 이용하여 predict만 수행함
 
-model = keras.models.load_model('/data/_'+str(pipe.checkpoint_count)+'/mymodel')
+indata_model = keras.models.load_model('/data/_'+str(pipe.checkpoint_count)+'/mymodel')
+outdata_model = keras.models.load_model('/data/_'+str(pipe.checkpoint_count)+'/mymodel')
+
+result = Calc_rate(indata_model,outdata_model,pipe.x_in_valid,pipe.x_out_valid,day=len(pipe.x_in_valid))
+
+print(result)
 
 
-
-
-#test
-import matplotlib.pyplot as plt
-#여러개출력으로 바꾸기
-plt.plot(result)
-plt.show()
 
 
