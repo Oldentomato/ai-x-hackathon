@@ -5,8 +5,11 @@ import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import LSTM as lt
+import check_loss as chls
 
 checkpoint_count = 1
+
+
 
 x_data = pd.read_csv("/data/dataset/b_xData")
 y_data = pd.read_csv("/data/dataset/b_yData")
