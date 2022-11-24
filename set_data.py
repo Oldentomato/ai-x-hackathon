@@ -26,8 +26,8 @@ def Data_Processing(bus_station,in_data,out_data):
     near_arrive_bus = pd.DataFrame(near_arrive_bus)
     near_depart_bus = pd.DataFrame(near_depart_bus)
 
-    in_data = in_data.drop([9,18])
-    out_data = out_data.drop([9,18])
+    # in_data = in_data.drop([9,18])
+    # out_data = out_data.drop([9,18])
 
     in_data = in_data.fillna(method='ffill')
     out_data = out_data.fillna(method='ffill')
@@ -47,18 +47,18 @@ def SaveData(dir,data_1,data_2,data_3,data_4):
     Pandas to csv Saving
         Args:
             dir `string`: SaveRootDirectoryURL
-            data_1 `pandas`: b_arrive_bus_station
-            data_2 `pandas`: b_depart_bus_station
+            data_1 `pandas`: arrive_bus_station
+            data_2 `pandas`: depart_bus_station
             data_3 `pandas`: in_data
             data_4 `pandas`: out_data
         Returns:
             None
     """
-    data_1.to_csv("resultdata/"+dir+"/b_arr_xData",header=True,index=False)
-    data_2.to_csv("resultdata/"+dir+"/b_depart_xData",header=True,index=False)
+    data_1.to_csv("resultdata/"+dir+"_arr_xData",header=True,index=False)
+    data_2.to_csv("resultdata/"+dir+"_depart_xData",header=True,index=False)
 
-    data_3.to_csv("resultdata/"+dir+"/b_in_yData",header=True,index=False)
-    data_4.to_csv("resultdata/"+dir+"/b_out_yData",header=True,index=False)
+    data_3.to_csv("resultdata/"+dir+"_in_yData",header=True,index=False)
+    data_4.to_csv("resultdata/"+dir+"_out_yData",header=True,index=False)
 
 
 def Calculate_rate(dataframe):
@@ -174,7 +174,7 @@ y_out_data.reverse()
 
 #주변 버스정보 데이터 가져오고 병합
 b_bus_station = ['삼청파출소','정독도서관','경복궁.국립민속박물관','국립민속박물관']
-g_bus_station = ['중앙중고','원서고개','사우디대사관','사우디대사관앞.경남빌라','안국선원.삼거리','북촌한옥마을입구.정세권활동터','가희동주민센터','현대사거리','아름다운가게.정독도서관','재동초등학교']
+g_bus_station = ['중앙중고','원서고개','사우디대사관','사우디대사관앞.경남빌라']
 y_bus_station = ['덕성여중고','인사동.북촌','안국역.서울공예박물관','안국역.인사동','정독도서관','경복궁.국립민속박물관','국립민속박물관','법련사','경복궁','안국역','안국동']
 
 
@@ -182,10 +182,10 @@ b_arrive_bus_station,b_depart_bus_station,b_in_data,b_out_data = Data_Processing
 g_arrive_bus_station,g_depart_bus_station,g_in_data,g_out_data = Data_Processing(g_bus_station,g_in_data,g_out_data)
 y_arrive_bus_station,y_depart_bus_station,y_in_data,y_out_data = Data_Processing(y_bus_station,y_in_data,y_out_data)
 
-print(b_arrive_bus_station)
-print(b_depart_bus_station)
-print(b_in_data)
-print(b_out_data)
+print(g_arrive_bus_station)
+print(g_depart_bus_station)
+print(g_in_data)
+print(g_out_data)
 
 # fig, axes = plt.subplots(2,2)
 
@@ -202,9 +202,9 @@ print(b_out_data)
 
 
 
-SaveData("bukchon",b_arrive_bus_station,b_depart_bus_station,b_in_data,b_out_data)
-SaveData("gaedong",g_arrive_bus_station,g_depart_bus_station,g_in_data,g_out_data)
-SaveData("yulgok",y_arrive_bus_station,y_depart_bus_station,y_in_data,y_out_data)
+# SaveData("bukchon/b",b_arrive_bus_station,b_depart_bus_station,b_in_data,b_out_data)
+# SaveData("gaedong/g",g_arrive_bus_station,g_depart_bus_station,g_in_data,g_out_data)
+# SaveData("yulgok/y",y_arrive_bus_station,y_depart_bus_station,y_in_data,y_out_data)
 
 print("done")
 
