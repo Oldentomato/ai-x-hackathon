@@ -21,11 +21,11 @@ def run_gpu():
             
 
 def standarization(data): #표준화 (정규화는 효과가 안좋았음)
-    data = data[:]*0.001
-    data = (data - np.mean(data, axis=0)) / np.std(data, axis=0)
-    # data_mean = data[:].mean()
-    # data_std = data[:].std()
-    # data = (data-data_mean)/data_std
+    # data = data[:]*0.001
+    # data = (data - np.mean(data, axis=0)) / np.std(data, axis=0)
+    data_mean = data[:].mean()
+    data_std = data[:].std()
+    data = (data-data_mean)/data_std
     return data
 
 def plot_train_history(history, title):
@@ -49,10 +49,10 @@ def multi_step_plot(history, true_future, prediction):
     num_out = len(true_future)
     
     plt.plot(num_in, np.array(history[:,1]), label='History')
-    plt.plot(np.arange(num_out)/19, np.array(true_future),'bo', label='True Future')
+    plt.plot(np.arange(num_out)/18, np.array(true_future),'bo', label='True Future')
     
     if prediction.any():
-        plt.plot(np.arange(num_out)/19, np.array(prediction), 'ro', label='Predicted Future')
+        plt.plot(np.arange(num_out)/18, np.array(prediction), 'ro', label='Predicted Future')
     plt.legend(loc='upper left')
     plt.show()
 
@@ -63,20 +63,32 @@ def create_time_steps(length):
 
 def SetCallbacks(checkpoint_count):
     checkpoint = ModelCheckpoint(
-        '/data/checkpoint/_'+str(checkpoint_count+1)+'/epoch_{epoch:03d}.ckpt',
+        'checkpoint/_'+str(checkpoint_count+1)+'/epoch_{epoch:03d}.ckpt',
         monitor = 'val_loss',
-        save_best_only = True
+        save_best_only = True,
+        # mode = 'min',
+        save_freq=10
     )
 
     callbacks = [checkpoint]
     return callbacks
 
-def create_model():
+def create_model(x_train,layer_1,layer_2,dropout):
+    """
+    Create LSTM Model
+        Args:
+            x_train `pandas.dataframe`: x_input_train_data
+            layer_1 `integer`: num of layer1 node count
+            layer_2 `integer`: num of layer2 node count
+            dropout `float`: dropout rate
+        Returns:
+            model
+    """
     model = tf.keras.models.Sequential()
-    model.add(tf.keras.layers.LSTM(64, return_sequences=True, input_shape=x_train.shape[-2:]))
-    model.add(tf.keras.layers.LSTM(32, activation='relu'))
-    model.add(tf.keras.layers.Dropout(0.05))
-    model.add(tf.keras.layers.Dense(19))#19시간(1일) 데이터
+    model.add(tf.keras.layers.LSTM(layer_1, return_sequences=True, input_shape=x_train.shape[-2:]))
+    model.add(tf.keras.layers.LSTM(layer_2, activation='relu'))
+    model.add(tf.keras.layers.Dropout(dropout))
+    model.add(tf.keras.layers.Dense(18))#18시간(1일) 데이터
 
     model.summary()
 
@@ -85,14 +97,15 @@ def create_model():
     return model
     
 
-def run_model(model,callback,x_train,y_train,x_valid,y_valid):
-    with tf.device("/gpu:0"):
-        history = model.fit(x_train,y_train,
+def RunAndSave_model(model,region,kind,callback,x_train,y_train,x_valid,y_valid):
+    # with tf.device("/gpu:0"):
+    history = model.fit(x_train,y_train,
                                        epochs=100,
                                        validation_data=(x_valid,y_valid),
                                        batch_size=64,
                                        callbacks = callback,
                                         shuffle=True
                                       )
+    model.save('models/'+region+'/_1/'+kind+'/mymodel.h5')
     return history
 

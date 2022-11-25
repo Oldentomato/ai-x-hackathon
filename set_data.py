@@ -11,8 +11,6 @@ storepos = pd.read_csv("dataset/storepos_info.csv", encoding='CP949')
 
 def Data_Processing(bus_station,in_data,out_data):
     near_arrive_bus, near_depart_bus = extract_businfo(bus_station)
-    near_arrive_bus.drop(['기준_날짜'],axis=1, inplace=True)
-    near_depart_bus.drop(['기준_날짜'],axis=1, inplace=True)
 
     near_arrive_bus = near_arrive_bus.values.tolist()
     near_depart_bus = near_depart_bus.values.tolist()
@@ -28,13 +26,18 @@ def Data_Processing(bus_station,in_data,out_data):
 
     in_data = in_data.drop([9,18])
     out_data = out_data.drop([9,18])
+
+    in_data = in_data.fillna(method='ffill')
+    out_data = out_data.fillna(method='ffill')
+    near_arrive_bus = near_arrive_bus.fillna(method='bfill')
+    near_depart_bus = near_depart_bus.fillna(method='bfill')
+    near_arrive_bus = near_arrive_bus.fillna(method='ffill')
+    near_depart_bus = near_depart_bus.fillna(method='ffill')
+
     in_data.reset_index(inplace=True,drop=True)
     out_data.reset_index(inplace=True,drop=True)
 
-    in_data = in_data.fillna(method='bfill')
-    out_data = out_data.fillna(method='bfill')
-    near_arrive_bus = near_arrive_bus.fillna(method='bfill')
-    near_arrive_bus = near_arrive_bus.fillna(method='bfill')
+
 
     return near_arrive_bus,near_depart_bus,in_data,out_data
 
@@ -44,18 +47,18 @@ def SaveData(dir,data_1,data_2,data_3,data_4):
     Pandas to csv Saving
         Args:
             dir `string`: SaveRootDirectoryURL
-            data_1 `pandas`: b_arrive_bus_station
-            data_2 `pandas`: b_depart_bus_station
+            data_1 `pandas`: arrive_bus_station
+            data_2 `pandas`: depart_bus_station
             data_3 `pandas`: in_data
             data_4 `pandas`: out_data
         Returns:
             None
     """
-    data_1.to_csv("resultdata/"+dir+"/b_arr_xData",header=True,index=False)
-    data_2.to_csv("resultdata/"+dir+"/b__depart_xData",header=True,index=False)
+    data_1.to_csv("resultdata/"+dir+"arr_xData",header=True,index=False)
+    data_2.to_csv("resultdata/"+dir+"depart_xData",header=True,index=False)
 
-    data_3.to_csv("resultdata/"+dir+"/b_in_yData",header=True,index=True)
-    data_4.to_csv("resultdata/"+dir+"/b_out_yData",header=True,index=True)
+    data_3.to_csv("resultdata/"+dir+"in_yData",header=True,index=False)
+    data_4.to_csv("resultdata/"+dir+"out_yData",header=True,index=False)
 
 
 def Calculate_rate(dataframe):
@@ -95,17 +98,20 @@ def Calculate_rate(dataframe):
 
     return result_in_data, result_out_data
 
-#지정된 정류장들을 탐색 후 시간별 재차인원 구하기
+#지정된 정류장들을 탐색 후 시간별 재차인원 구하기(feature별 날짜구분하여 해야할것)
 def extract_businfo(bus_station):
+    bus_arrive_result = pd.DataFrame()
+    bus_depart_result = pd.DataFrame()
+    temp = pd.DataFrame()
     for i in range(0,len(bus_station)):
-        temp = bus_pos.loc[bus_pos['정류장_명칭'] == bus_station[i]][:]
+        temp = pd.concat([temp, bus_pos.loc[bus_pos['정류장_명칭'] == bus_station[i]][:]],axis=0)
     for j in temp['정류장_ID']:
-        bus_arrive_result = bus_people.loc[bus_people['도착_정류장_ID'] == j][:]
-        bus_depart_result = bus_people.loc[bus_people['출발_정류장_ID'] == j][:]
+        bus_arrive_result = pd.concat([bus_arrive_result, bus_people.loc[bus_people['도착_정류장_ID'] == j][:]], axis=0)
+        bus_depart_result = pd.concat([bus_depart_result, bus_people.loc[bus_people['출발_정류장_ID'] == j][:]], axis=0)
     
     #해당 버스의 날짜를 추출
-    bus_arrive_result = bus_arrive_result.iloc[:,[0,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]]
-    bus_depart_result = bus_depart_result.iloc[:,[0,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]]
+    bus_arrive_result = bus_arrive_result.iloc[:,[0,3,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]]
+    bus_depart_result = bus_depart_result.iloc[:,[0,2,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]]
     return bus_arrive_result, bus_depart_result
 
 
@@ -179,29 +185,25 @@ b_arrive_bus_station,b_depart_bus_station,b_in_data,b_out_data = Data_Processing
 g_arrive_bus_station,g_depart_bus_station,g_in_data,g_out_data = Data_Processing(g_bus_station,g_in_data,g_out_data)
 y_arrive_bus_station,y_depart_bus_station,y_in_data,y_out_data = Data_Processing(y_bus_station,y_in_data,y_out_data)
 
-print(g_arrive_bus_station)
-print(g_depart_bus_station)
-print(g_in_data)
-print(g_out_data)
-
-fig, axes = plt.subplots(2,2)
-
-axes[0][0].plot(g_arrive_bus_station)
-axes[0][1].plot(g_depart_bus_station)
-axes[1][0].plot(g_in_data)
-axes[1][1].plot(g_out_data)
-
-plt.show()
-
-#y도로폭 = 1
-# b_in_data = np.array(b_in_data)
-# b_in_data = b_in_data.flatten()
 
 
+# print(b_arrive_bus_station)
+# print(g_depart_bus_station)
+# print(g_in_data)
+# print(g_out_data)
+# fig, axes = plt.subplots(2,2)
 
-# SaveData("bukchon",b_arrive_bus_station,b_depart_bus_station,b_in_data,b_out_data)
-# SaveData("gaedong",g_arrive_bus_station,g_depart_bus_station,g_in_data,g_out_data)
-# SaveData("yulgok",y_arrive_bus_station,y_depart_bus_station,y_in_data,y_out_data)
+# axes[0][0].plot(g_arrive_bus_station)
+# axes[0][1].plot(g_depart_bus_station)
+# axes[1][0].plot(g_in_data)
+# axes[1][1].plot(g_out_data)
+
+# plt.show()
+
+
+SaveData("bukchon/",b_arrive_bus_station,b_depart_bus_station,b_in_data,b_out_data)
+SaveData("gaedong/",g_arrive_bus_station,g_depart_bus_station,g_in_data,g_out_data)
+SaveData("yulgok/",y_arrive_bus_station,y_depart_bus_station,y_in_data,y_out_data)
 
 print("done")
 
