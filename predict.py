@@ -60,14 +60,21 @@ db = firestore.client()
 #그동안 모은 데이터들을 이용하여 새로 학습 후 배포
 #loss가 큰 변동이 없다면 학습하지 않고 7일간 모인 x데이터를 이용하여 predict만 수행함
 
+<<<<<<< HEAD
 region = 'gaedong'
 
 indata_model = keras.models.load_model('models/'+region+'/_'+str(pipe.checkpoint_count)+'/in/mymodel.h5')
 outdata_model = keras.models.load_model('models/'+region+'/_'+str(pipe.checkpoint_count)+'/out/mymodel.h5')
 
 result = Calc_rate(indata_model,outdata_model,pipe.x_in_valid,pipe.x_out_valid,day=len(pipe.x_in_valid))
+=======
+indata_model = keras.models.load_model('/data/_'+str(pipe.checkpoint_count)+'/mymodel')
+outdata_model = keras.models.load_model('/data/_'+str(pipe.checkpoint_count)+'/mymodel')
+>>>>>>> c317dcc7badb5f7685cb53372e8c215045fbaaba
 
+result = Calc_rate(indata_model,outdata_model,pipe.x_in_valid,pipe.x_out_valid,day=len(pipe.x_in_valid))
 
+<<<<<<< HEAD
 answer = input('do you permit to upload data? [y/n]')
 if answer == 'y':
     doc_ref = db.collection(u'계동예측데이터').document(u'1주차')
@@ -80,6 +87,9 @@ if answer == 'y':
         data_convert.clear()
 else:
     print(result)
+=======
+print(result)
+>>>>>>> c317dcc7badb5f7685cb53372e8c215045fbaaba
 
 
 
